@@ -36,16 +36,26 @@ gatherdiskusage() {
 }
 
 gathercpuusage() {
-  local i=0
+  local i=1
+  let local limit = $collections+1
   local items=($(mpstat $interval $collections))
-  echo ${items[1]} | awk '{print $1;}' >> cpu_usage.plot #takes the datetime for the first iteration and add it to the file (NEEDS TO BE LOOPED)
+  while [$i -lt $limit]; do
+     echo -n ${items[$i]} | awk '{print $1;}' >> cpu_usage.plot #takes the datetime for the first iteration and add it to the file 
+     echo -n " " >> cpu_usgae.plot
+     echo -n ${items[$i]} | awk '{print $4;}' >> cpu_usage.plot
+     echo -n " " >> cpu_usgae.plot
+     echo -n ${items[$i]} | awk '{print $6;}' >> cpu_usage.plot
+     echo -n " " >> cpu_usgae.plot
+     echo  ${items[$i]} | awk '{print $13;}' >> cpu_usage.plot
+  done
+  perl bargraph.pl cpu_usage.plot cpu_usage.eps
 }
 
 setupplots() {
   echo -e "=stacked; usr; sys; idle\ntitle=CPU Utilization\ncolors=red,blue,green\nxlabel=Time of Data Collection\nylabel=Percentage (%)" > cpu_usage.plot
-  echo -e "=table\n=norotate\nyformat=%g\n\n" >> cpu_usage.plot
+  echo -e "=table\n=norotate\nyformat=%g\n" >> cpu_usage.plot
   echo -e "=stacked; kB_read/s; kB_wrtn/s\ntitle=Disk Utilization\ncolors=orange,yellow\nxlabel=Time of Data Collection\nylabel=Bandwidth (kB/sec)" > disk_usage.plot
-  echo -e "=table\n=norotate\nyformat=%g\n\n" >> disk_usage.plot
+  echo -e "=table\n=norotate\nyformat=%g\n" >> disk_usage.plot
   #Need function call for gatherdiskusage & gathercpuusage
 }
 
